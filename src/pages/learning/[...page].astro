@@ -1,0 +1,75 @@
+---
+import LearningCard from '@/components/learning-card.astro'
+import Breadcrumbs from '@/components/breadcrumbs.astro'
+import PageHead from '@/components/page-head.astro'
+import PaginationComponent from '@/components/ui/pagination'
+import Layout from '@/layouts/layout.astro'
+import { getLearningWithPosts, filterByType } from '@/lib/learning-utils'
+import { Icon } from 'astro-icon/components'
+import type { PaginateFunction } from 'astro'
+
+export async function getStaticPaths({ paginate }: { paginate: PaginateFunction }) {
+  const allEntries = await getLearningWithPosts()
+  return paginate(allEntries, { pageSize: 5 })
+}
+
+const { page } = Astro.props
+
+const allEntries = await getLearningWithPosts()
+const allCourses = filterByType(allEntries, 'courses')
+const allPapers = filterByType(allEntries, 'paper-readings')
+---
+
+<Layout class="max-w-3xl">
+  <PageHead slot="head" title="Learning" />
+  <Breadcrumbs
+    items={[
+      { label: 'Learning', href: '/learning', icon: 'lucide:graduation-cap' },
+    ]}
+  />
+
+  <section class="text-muted-foreground mb-6 text-sm leading-relaxed">
+    <p>
+      A curated collection of courses and papers I've studied, documenting my learning journey — what I studied, what I built, and what I learned along the way.
+    </p>
+  </section>
+
+  <div class="mb-6 flex gap-2 border-b pb-2">
+    <a
+      href="/learning"
+      class="border-foreground border-b-2 font-medium inline-flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors"
+    >
+      All ({allEntries.length})
+    </a>
+    <a
+      href="/learning/courses"
+      class="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors"
+    >
+      <Icon name="lucide:book-open" class="size-4" />
+      Courses ({allCourses.length})
+    </a>
+    <a
+      href="/learning/papers"
+      class="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors"
+    >
+      <Icon name="lucide:file-text" class="size-4" />
+      Papers ({allPapers.length})
+    </a>
+  </div>
+
+  <div class="flex flex-col gap-y-4">
+    {page.data.length === 0 && (
+      <p class="text-muted-foreground py-8 text-center text-sm">No entries recorded yet.</p>
+    )}
+    {page.data.map((entry: any) => (
+      <LearningCard entry={entry} />
+    ))}
+  </div>
+
+  <PaginationComponent
+    currentPage={page.currentPage}
+    totalPages={page.lastPage}
+    baseUrl="/learning/"
+    client:load
+  />
+</Layout>
