@@ -1,0 +1,189 @@
+---
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+
+import { formatDate } from '@/lib/utils'
+import {
+  getLearningBySlug,
+  getLinkedBlogPost,
+  getNotesUrl,
+  getLearningPost,
+} from '@/lib/learning-utils'
+import { Icon } from 'astro-icon/components'
+import type { LearningEntry } from '@/lib/learning-utils'
+import { render } from 'astro:content'
+
+interface Props {
+  slug: string
+}
+
+const { slug } = Astro.props
+const entry: LearningEntry | null = await getLearningBySlug(slug)
+if (!entry) {
+  throw new Error(`Learning entry not found for slug: ${slug}`)
+}
+
+const blogPost = await getLinkedBlogPost(slug)
+const notesUrl = getNotesUrl(slug)
+const learningPost = await getLearningPost(slug)
+const learningContent = learningPost ? await render(learningPost) : null
+const d = entry.data
+---
+
+<div class="rounded-xl border p-6">
+  <div class="mb-4 flex items-start justify-between gap-4">
+    <div>
+      <h3 class="text-xl font-medium">{d.name}</h3>
+      <div class="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-2 text-xs">
+        <span class="capitalize">{d.type}</span>
+        <Separator orientation="vertical" className="h-4!" />
+        <span>
+          {formatDate(d.start_date)}
+          {d.end_date ? ` — ${formatDate(d.end_date)}` : ' — Present'}
+        </span>
+        {d.last_revision_date && (
+          <>
+            <Separator orientation="vertical" className="h-4!" />
+            <span>Last revision: {formatDate(d.last_revision_date)}</span>
+          </>
+        )}
+      </div>
+    </div>
+    <Badge
+      variant={
+        d.status === 'completed'
+          ? 'default'
+          : d.status === 'in-progress'
+            ? 'muted'
+            : 'outline'
+      }
+      className="shrink-0"
+    >
+      {d.status}
+    </Badge>
+  </div>
+
+  {d.context && (
+    <div class="bg-muted/50 mb-4 rounded-lg p-3 text-sm">
+      <div class="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
+        <span><span class="font-medium">Mode:</span> {d.context.type}</span>
+        {d.context.institution && (
+          <span><span class="font-medium">Institution:</span> {d.context.institution}</span>
+        )}
+        <span><span class="font-medium">Credential:</span> {d.context.credential_earned ? 'Yes' : 'No'}</span>
+      </div>
+    </div>
+  )}
+
+  {d.authors && d.authors.length > 0 && (
+    <div class="mb-3 text-sm">
+      <span class="font-medium">Authors:</span>{' '}
+      <span class="text-muted-foreground">{d.authors.join(', ')}</span>
+    </div>
+  )}
+
+  {d.year && (
+    <div class="mb-3 text-sm">
+      <span class="font-medium">Year:</span>{' '}
+      <span class="text-muted-foreground">{d.year}</span>
+    </div>
+  )}
+
+  {d.topics && d.topics.length > 0 && (
+    <div class="mb-3 text-sm">
+      <span class="font-medium">Topics:</span>{' '}
+      <div class="mt-1 flex flex-wrap gap-1">
+        {d.topics.map((topic) => (
+          <Badge variant="muted">{topic}</Badge>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {d.labels && d.labels.length > 0 && (
+    <div class="mb-4">
+      <div class="flex flex-wrap gap-2">
+        {d.labels.map((label) => (
+          <Badge variant="muted" className="flex items-center gap-x-1">
+            <Icon name="lucide:hash" class="size-3" />
+            {label}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {learningContent && (
+    <div class="prose mb-4 max-w-none">
+      <learningContent.Content />
+    </div>
+  )}
+
+  {d.event_log && d.event_log.length > 0 && (
+    <div class="mb-4">
+      <span class="mb-2 block text-sm font-medium">Timeline</span>
+      <div class="space-y-2">
+        {d.event_log
+          .sort((a, b) => b.date.valueOf() - a.date.valueOf())
+          .map((event) => (
+            <div class="flex gap-3 text-sm">
+              <span class="text-muted-foreground shrink-0 text-xs">
+                {formatDate(event.date)}
+              </span>
+              <div>
+                <span class="capitalize">{event.type.replace(/_/g, ' ')}</span>
+                {event.description && (
+                  <span class="text-muted-foreground ml-1">
+                    — {event.description}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+      </div>
+    </div>
+  )}
+
+  <div>
+    <span class="mb-2 block text-sm font-medium">Resources</span>
+    {d.links && d.links.length > 0 && (
+      <div class="mb-3 flex flex-wrap gap-2">
+        {d.links.map((link) => (
+          link.url && (
+            <a
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="border-muted-foreground/20 hover:bg-muted inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs transition-colors"
+            >
+              <Icon name="lucide:external-link" class="size-3" />
+              {link.type}
+            </a>
+          )
+        ))}
+      </div>
+    )}
+    <div class="flex flex-wrap items-center gap-3">
+      {blogPost && (
+        <a
+          href={`/blog/${blogPost.id}`}
+          class="inline-flex items-center gap-2 text-sm font-medium hover:underline"
+        >
+          <Icon name="lucide:file-text" class="size-4" />
+          Read my notes on this {d.type}
+        </a>
+      )}
+      {notesUrl && (
+        <a
+          href={notesUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="border-muted-foreground/20 hover:bg-muted inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm transition-colors"
+        >
+          <Icon name="lucide:github" class="size-3.5" />
+          View notes on GitHub
+        </a>
+      )}
+    </div>
+  </div>
+</div>
