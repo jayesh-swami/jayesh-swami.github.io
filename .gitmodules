@@ -1,0 +1,3 @@
+[submodule "src/content/learning"]
+	path = src/content/learning
+	url = git@github.com:jayesh-swami/learning-repo.git
