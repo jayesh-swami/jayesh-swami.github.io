@@ -1,0 +1,83 @@
+---
+interface Props {
+  lines: string[]
+}
+
+const { lines } = Astro.props
+---
+
+<section class="rounded-lg bg-background p-4 font-mono text-sm" data-lines={JSON.stringify(lines)}>
+  <div id="terminal-output" class="text-foreground leading-relaxed">
+    {
+      lines.map((line, i) => (
+        <div>
+          <span class="text-green-600 dark:text-green-400 select-none">&gt; </span>{line}
+          {i === lines.length - 1 && <span id="cursor" class="inline-block w-[1ch] animate-blink">▊</span>}
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<style is:inline>
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+  .animate-blink {
+    animation: blink 1s step-end infinite;
+  }
+</style>
+
+<script is:inline data-astro-rerun>
+  (function() {
+    const container = document.getElementById('terminal-output');
+    const cursor = document.getElementById('cursor');
+    if (!container || !cursor) return;
+    const lines = JSON.parse(container.parentElement.getAttribute('data-lines'));
+
+    cursor.remove();
+    container.querySelectorAll('div').forEach(el => el.remove());
+    cursor.style.display = 'inline-block';
+
+    let lineIdx = 0;
+    let charIdx = 0;
+    let currentTextEl = null;
+
+    function createLine() {
+      const lineDiv = document.createElement('div');
+      const prompt = document.createElement('span');
+      prompt.className = 'text-green-600 dark:text-green-400 select-none';
+      prompt.textContent = '> ';
+      currentTextEl = document.createElement('span');
+      lineDiv.appendChild(prompt);
+      lineDiv.appendChild(currentTextEl);
+      container.appendChild(lineDiv);
+    }
+
+    function finish() {
+      const lastLine = container.querySelector('div:last-child');
+      if (lastLine) lastLine.appendChild(cursor);
+      setTimeout(() => { cursor.style.display = 'none'; }, 2000);
+    }
+
+    function type() {
+      if (lineIdx >= lines.length) {
+        finish();
+        return;
+      }
+      if (charIdx === 0) createLine();
+      const line = lines[lineIdx];
+      if (charIdx < line.length) {
+        currentTextEl.textContent += line.charAt(charIdx);
+        charIdx++;
+        setTimeout(type, 35 + Math.random() * 20);
+      } else {
+        lineIdx++;
+        charIdx = 0;
+        setTimeout(type, 250);
+      }
+    }
+    setTimeout(type, 600);
+  })();
+</script>

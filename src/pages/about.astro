@@ -1,39 +1,17 @@
 ---
-import Breadcrumbs from '@/components/breadcrumbs.astro'
-import Link from '@/components/link.astro'
 import PageHead from '@/components/page-head.astro'
+import TerminalIntro from '@/components/terminal-intro.astro'
 import Layout from '@/layouts/layout.astro'
 ---
 
 <Layout class="max-w-3xl">
   <PageHead slot="head" title="About" />
-  <Breadcrumbs items={[{ label: 'About', icon: 'lucide:info' }]} />
 
-  <section>
-    <div class="min-w-full">
-      <div class="prose mb-8">
-        <p class="mt-0">
-          astro-erudite is an opinionated, unstyled static blogging template
-          that prioritizes simplicity and performance, built with <Link
-            href="https://astro.build"
-            external
-            underline>Astro</Link
-          >, <Link href="https://tailwindcss.com" external underline
-            >Tailwind</Link
-          >, and <Link href="https://ui.shadcn.com" external underline
-            >shadcn/ui</Link
-          >. It provides a clean foundation for your content while being
-          extremely easy to customize.
-        </p>
-        <p>
-          To learn more about the philosophy behind this template, check out the
-          following blog post: <Link
-            href="/blog/the-state-of-static-blogs"
-            underline>The State of Static Blogs in 2024</Link
-          >.
-        </p>
-      </div>
-
-    </div>
-  </section>
+  <TerminalIntro
+    lines={[
+      "I write about software, math, and the things I'm learning.",
+      "Previously at CERN and BrowserStack. Grad from BITS Goa.",
+      "Starting an MS in Data Science at IMT Atlantique.",
+    ]}
+  />
 </Layout>
