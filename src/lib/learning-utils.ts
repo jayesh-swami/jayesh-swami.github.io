@@ -7,7 +7,11 @@ export type LearningPostEntry = CollectionEntry<'learningPosts'>
 export async function getAllLearning(): Promise<LearningEntry[]> {
   const entries = await getCollection('learning')
   return entries.sort(
-    (a, b) => b.data.start_date.valueOf() - a.data.start_date.valueOf(),
+    (a, b) => {
+      const aDate = a.data.start_date ?? a.data.event_log?.find((e: any) => e.type === 'start')?.date
+      const bDate = b.data.start_date ?? b.data.event_log?.find((e: any) => e.type === 'start')?.date
+      return (bDate?.valueOf() ?? 0) - (aDate?.valueOf() ?? 0)
+    },
   )
 }
 

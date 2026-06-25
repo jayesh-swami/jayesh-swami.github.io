@@ -74,6 +74,8 @@ if (mode === 'detail' && entry) {
   const lp = await getLearningPost(slug)
   learningContent = lp ? await render(lp) : null
 }
+
+const startDate = d?.start_date ?? d?.event_log?.find((e: any) => e.type === 'start')?.date
 ---
 
 {
@@ -109,8 +111,8 @@ if (mode === 'detail' && entry) {
               <span>Course</span>
               <span>&middot;</span>
               <span>
-                {formatDate(d.start_date)}
-                {d.end_date ? ` — ${formatDate(d.end_date)}` : ' — Present'}
+                {startDate ? formatDate(startDate) : ''}
+                {d.end_date ? ` — ${formatDate(d.end_date)}` : startDate ? ' — Present' : ''}
               </span>
               {d.last_revision_date && (
                 <>
@@ -157,7 +159,7 @@ if (mode === 'detail' && entry) {
                 .sort((a: any, b: any) => b.date.valueOf() - a.date.valueOf())
                 .map((event: any) => (
                   <div class="flex gap-3 text-sm">
-                    <span class="text-muted-foreground shrink-0 text-xs">
+                    <span class="text-muted-foreground shrink-0 w-[8.5rem] text-xs">
                       {formatDate(event.date)}
                     </span>
                     <div>

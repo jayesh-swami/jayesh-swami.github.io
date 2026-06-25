@@ -24,7 +24,7 @@ const learning = defineCollection({
     name: z.string(),
     type: z.enum(['course', 'paper-reading', 'others']),
     status: z.enum(['in-progress', 'completed', 'paused']),
-    start_date: z.coerce.date(),
+    start_date: z.coerce.date().optional(),
     end_date: z.coerce.date().nullable(),
     last_revision_date: z.coerce.date().nullable(),
     labels: z.array(z.string()),

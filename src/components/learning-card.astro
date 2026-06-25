@@ -14,7 +14,8 @@ interface Props {
 const { entry } = Astro.props
 const slug = getSlug(entry.id)
 const type = getType(entry.id)
-const formattedStart = formatDate(entry.data.start_date)
+const startDate = entry.data.start_date ?? entry.data.event_log?.find((e: any) => e.type === 'start')?.date
+const formattedStart = startDate ? formatDate(startDate) : null
 const formattedEnd = entry.data.end_date
   ? formatDate(entry.data.end_date)
   : null

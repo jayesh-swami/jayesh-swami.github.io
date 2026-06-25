@@ -28,6 +28,7 @@ const notesUrl = getNotesUrl(slug)
 const learningPost = await getLearningPost(slug)
 const learningContent = learningPost ? await render(learningPost) : null
 const d = entry.data
+const startDate = d.start_date ?? d.event_log?.find((e: any) => e.type === 'start')?.date
 ---
 
 <div class="rounded-xl border p-6">
@@ -38,8 +39,8 @@ const d = entry.data
         <span class="capitalize">{d.type}</span>
         <Separator orientation="vertical" className="h-4!" />
         <span>
-          {formatDate(d.start_date)}
-          {d.end_date ? ` — ${formatDate(d.end_date)}` : ' — Present'}
+          {startDate ? formatDate(startDate) : ''}
+          {d.end_date ? ` — ${formatDate(d.end_date)}` : startDate ? ' — Present' : ''}
         </span>
         {d.last_revision_date && (
           <>
@@ -127,7 +128,7 @@ const d = entry.data
           .sort((a, b) => b.date.valueOf() - a.date.valueOf())
           .map((event) => (
             <div class="flex gap-3 text-sm">
-              <span class="text-muted-foreground shrink-0 text-xs">
+              <span class="text-muted-foreground shrink-0 w-[8.5rem] text-xs">
                 {formatDate(event.date)}
               </span>
               <div>
