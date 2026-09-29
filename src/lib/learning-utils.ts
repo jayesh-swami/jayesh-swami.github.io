@@ -4,7 +4,23 @@ export type LearningEntry = CollectionEntry<'learning'>
 export type LearningPostEntry = CollectionEntry<'learningPosts'>
 
 export function getLearningSortDate(entry: LearningEntry): Date | undefined {
-  return entry.data.end_date ?? entry.data.start_date ?? entry.data.event_log?.find((e: any) => e.type === 'start')?.date
+  return entry.data.end_date ?? getLearningStartDate(entry)
+}
+
+export function getLearningStartDate(entry: LearningEntry): Date | undefined {
+  return entry.data.start_date ?? entry.data.event_log?.find((e: any) => e.type === 'start')?.date
+}
+
+const STATUS_ORDER: Record<LearningEntry['data']['status'], number> = {
+  'in-progress': 0,
+  completed: 1,
+  paused: 2,
+}
+
+export function compareByStatusThenStart(a: LearningEntry, b: LearningEntry): number {
+  const byStatus = STATUS_ORDER[a.data.status] - STATUS_ORDER[b.data.status]
+  if (byStatus !== 0) return byStatus
+  return (getLearningStartDate(b)?.valueOf() ?? 0) - (getLearningStartDate(a)?.valueOf() ?? 0)
 }
 
 export async function getAllLearning(): Promise<LearningEntry[]> {

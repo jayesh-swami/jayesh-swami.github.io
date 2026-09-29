@@ -9,7 +9,7 @@ import { buttonVariants } from '@/components/ui/button'
 import { SITE } from '@/consts'
 import Layout from '@/layouts/layout.astro'
 import { getRecentPosts } from '@/lib/data-utils'
-import { getLearningWithPosts, getLearningSortDate } from '@/lib/learning-utils'
+import { getLearningWithPosts, compareByStatusThenStart } from '@/lib/learning-utils'
 import { getCollection } from 'astro:content'
 
 const blog = await getRecentPosts(SITE.featuredPostCount)
@@ -18,12 +18,12 @@ const allProjects = await getCollection('projects')
 
 const courses = allLearning
   .filter(e => e.id.startsWith('courses/'))
-  .sort((a, b) => (getLearningSortDate(b)?.valueOf() ?? 0) - (getLearningSortDate(a)?.valueOf() ?? 0))
+  .sort(compareByStatusThenStart)
   .slice(0, SITE.featuredLearningPerSection)
 
 const papers = allLearning
   .filter(e => e.id.startsWith('paper-readings/'))
-  .sort((a, b) => (getLearningSortDate(b)?.valueOf() ?? 0) - (getLearningSortDate(a)?.valueOf() ?? 0))
+  .sort(compareByStatusThenStart)
   .slice(0, SITE.featuredLearningPerSection)
 
 const projects = allProjects
